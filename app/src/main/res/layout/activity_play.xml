@@ -18,7 +18,18 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="400dp"
+            android:layout_height="159dp"
+            android:orientation="vertical">
+
+            <SurfaceView
+                android:id="@+id/sv_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="170dp"
             android:orientation="vertical">
 
             <SurfaceView
@@ -47,4 +58,5 @@
                 android:text="Stop" />
         </LinearLayout>
     </LinearLayout>
+
 </RelativeLayout>

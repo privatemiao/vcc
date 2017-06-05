@@ -35,7 +35,9 @@ public class Application extends android.app.Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
+        System.loadLibrary("gnustl_shared");
+        System.loadLibrary("qupai-media-thirdparty");
+        System.loadLibrary("qupai-media-jni");
         startNettyClient();
     }
 

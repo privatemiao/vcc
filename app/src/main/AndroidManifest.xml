@@ -2,30 +2,31 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.easyway.vcc">
 
-    <uses-feature android:name="android.hardware.camera" />
-    <!-- 申明应用需要用到相机 -->
-    <uses-feature
-        android:name="android.hardware.camera.autofocus"
-        android:required="false" />
-    <!-- 申明应用需要用到自动对焦 -->
-    <uses-permission android:name="android.permission.CAMERA" />
-    <!-- 申请相机使用权限 -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <!-- 申明录音权限 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- 申明网络权限 -->
-
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:supportsRtl="true"
         android:name="com.easyway.vcc.net.Application"
+        android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".SplashActivity">
             <intent-filter>

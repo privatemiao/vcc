@@ -1,101 +1,81 @@
 package com.easyway.vcc;
 
+
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
 
-import com.baidu.recorder.api.LiveConfig;
-import com.baidu.recorder.api.LiveSession;
-import com.baidu.recorder.api.LiveSessionHW;
-import com.baidu.recorder.api.LiveSessionSW;
-import com.baidu.recorder.api.SessionStateListener;
+import com.alibaba.livecloud.live.AlivcMediaFormat;
+import com.alibaba.livecloud.live.AlivcMediaRecorder;
+import com.alibaba.livecloud.live.AlivcMediaRecorderFactory;
 
-import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class StreamActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private LiveSession mLiveSession = null;
+
+    private AlivcMediaRecorder mMediaRecorder;
+    private SurfaceView svView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_stream);
+
+        svView = (SurfaceView) findViewById(R.id.sv_view);
 
         findViewById(R.id.btn_start).setOnClickListener(this);
         findViewById(R.id.btn_stop).setOnClickListener(this);
 
-        SurfaceView svPublish = (SurfaceView) findViewById(R.id.sv_view);
+        initUI();
+    }
 
-
-        LiveConfig liveConfig = new LiveConfig.Builder()
-                .setCameraId(LiveConfig.CAMERA_FACING_FRONT) // 选择摄像头为前置摄像头
-                .setCameraOrientation(1) // 设置摄像头为竖向
-                .setVideoWidth(1280) // 设置推流视频宽度, 需传入长的一边
-                .setVideoHeight(720) // 设置推流视频高度，需传入短的一边
-                .setVideoFPS(15) // 设置视频帧率
-                .setInitVideoBitrate(1024000) // 设置视频码率，单位为bit per seconds
-                .setAudioBitrate(64 * 1000) // 设置音频码率，单位为bit per seconds
-                .setAudioSampleRate(LiveConfig.AUDIO_SAMPLE_RATE_44100) // 设置音频采样率
-                .setGopLengthInSeconds(2) // 设置I帧间隔，单位为秒
-                .setQosEnabled(true) // 开启码率自适应，默认为true，即默认开启
-                .setMinVideoBitrate(200 * 1000) // 码率自适应，最低码率
-                .setMaxVideoBitrate(1024 * 1000) // 码率自适应，最高码率
-                .setQosSensitivity(5) // 码率自适应，调整的灵敏度，单位为秒，可接受[5, 10]之间的整数值
-                .build();
-
-        mLiveSession = new LiveSessionHW(this, liveConfig);
-//        mLiveSession = new LiveSessionSW(this, liveConfig);
-
-        mLiveSession.bindPreviewDisplay(svPublish.getHolder());
-        mLiveSession.prepareSessionAsync();
-
-        mLiveSession.setStateListener(new SessionStateListener() {
+    public void initUI() {
+        svView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
-            public void onSessionPrepared(int i) {
-//                mLiveSession.startRtmpSession("rtmp://192.168.45.107/live/request");
+            public void surfaceCreated(SurfaceHolder holder) {
+                holder.setKeepScreenOn(true);
+                Map<String, Object> mConfigure = new HashMap<>();
+                mConfigure.put(AlivcMediaFormat.KEY_CAMERA_FACING, AlivcMediaFormat.CAMERA_FACING_FRONT);
+                mConfigure.put(AlivcMediaFormat.KEY_MAX_ZOOM_LEVEL, 3);
+                mConfigure.put(AlivcMediaFormat.KEY_OUTPUT_RESOLUTION, AlivcMediaFormat.OUTPUT_RESOLUTION_240P);
+                mMediaRecorder.prepare(mConfigure, svView.getHolder().getSurface());
             }
 
             @Override
-            public void onSessionStarted(int i) {
-
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+                mMediaRecorder.setPreviewSize(width, height);
             }
 
             @Override
-            public void onSessionStopped(int i) {
-
-            }
-
-            @Override
-            public void onSessionError(int i) {
-                Toast.makeText(StreamActivity.this, String.format("Error %d", i), Toast.LENGTH_SHORT).show();
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                mMediaRecorder.stopRecord();
+                mMediaRecorder.reset();
             }
         });
 
+        mMediaRecorder = AlivcMediaRecorderFactory.createMediaRecorder();
+        mMediaRecorder.init(this);
     }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        mLiveSession.destroyRtmpSession();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mLiveSession.destroyRtmpSession();
-    }
-
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.btn_start:
-                mLiveSession.startRtmpSession("rtmp://192.168.45.107/live/request" + new Date().getTime());
+                Toast.makeText(StreamActivity.this, "~~~~~~推送视频~~~~~~", Toast.LENGTH_SHORT).show();
+                try {
+                    mMediaRecorder.startRecord("rtmp://192.168.2.130/live/request");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.btn_stop:
-                mLiveSession.stopRtmpSession();
+                mMediaRecorder.stopRecord();
                 break;
         }
     }

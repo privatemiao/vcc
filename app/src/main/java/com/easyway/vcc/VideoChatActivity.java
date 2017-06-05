@@ -4,22 +4,23 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
 
-import com.baidu.cloud.media.player.BDCloudMediaPlayer;
-import com.baidu.cloud.media.player.IMediaPlayer;
-import com.baidu.recorder.api.LiveConfig;
-import com.baidu.recorder.api.LiveSession;
-import com.baidu.recorder.api.LiveSessionHW;
-import com.baidu.recorder.api.SessionStateListener;
+import com.alibaba.livecloud.live.AlivcMediaFormat;
+import com.alibaba.livecloud.live.AlivcMediaRecorder;
+import com.alibaba.livecloud.live.AlivcMediaRecorderFactory;
+import com.alivc.player.AliVcMediaPlayer;
+import com.alivc.player.MediaPlayer;
 import com.easyway.vcc.net.Application;
 import com.ewivt.vhs.dto.request.EndHelpRequest;
 import com.ewivt.vhs.dto.request.HelpRequest;
 import com.ewivt.vhs.dto.response.HelpResponse;
 
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
@@ -28,21 +29,20 @@ import io.reactivex.functions.Consumer;
 
 public class VideoChatActivity extends AppCompatActivity implements View.OnClickListener {
 
-    SurfaceView svPlay;
-    SurfaceView svPublish;
+    public static final String STREAM_SERVER = "rtmp://10.100.103.13/live";
+    public static final String CLIENT_NAME = "Client0001";
+    public static final String CLIENT_ID = "0001";
 
-    private LiveSession mLiveSession = null;//发布
-
-    private BDCloudMediaPlayer mMediaPlayer;//播放
-
-    private String type;
+    private SurfaceView svPlay;
+    private SurfaceView svPublish;
 
     private Application application;
+
+    private AlivcMediaRecorder mMediaRecorder;
+    private AliVcMediaPlayer mPlayer;
+
     private CompositeDisposable _disposables;
 
-    public static final String STREAM_SERVER = "rtmp://10.100.103.13/live";
-
-    public boolean isPublished = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,8 +57,6 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
 
         svPublish.setZOrderOnTop(true);
 
-        type = getIntent().getStringExtra("type");
-
 
         initUI();
 
@@ -68,7 +66,6 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
 
         initCommProcessor();
 
-//        register();
     }
 
 
@@ -100,75 +97,75 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
 
 
     private void initUI() {
-        //publish
-        LiveConfig liveConfig = new LiveConfig.Builder()
-                .setCameraId(LiveConfig.CAMERA_FACING_FRONT) // 选择摄像头为前置摄像头
-                .setCameraOrientation(1) // 设置摄像头为竖向
-                .setVideoWidth(1280) // 设置推流视频宽度, 需传入长的一边
-                .setVideoHeight(720) // 设置推流视频高度，需传入短的一边
-                .setVideoFPS(15) // 设置视频帧率
-                .setInitVideoBitrate(1024000) // 设置视频码率，单位为bit per seconds
-                .setAudioBitrate(64 * 1000) // 设置音频码率，单位为bit per seconds
-                .setAudioSampleRate(LiveConfig.AUDIO_SAMPLE_RATE_44100) // 设置音频采样率
-                .setGopLengthInSeconds(2) // 设置I帧间隔，单位为秒
-                .setQosEnabled(true) // 开启码率自适应，默认为true，即默认开启
-                .setMinVideoBitrate(200 * 1000) // 码率自适应，最低码率
-                .setMaxVideoBitrate(1024 * 1000) // 码率自适应，最高码率
-                .setQosSensitivity(5) // 码率自适应，调整的灵敏度，单位为秒，可接受[5, 10]之间的整数值
-                .build();
-
-        mLiveSession = new LiveSessionHW(this, liveConfig);
-        mLiveSession.bindPreviewDisplay(svPublish.getHolder());
-        mLiveSession.prepareSessionAsync();
-        mLiveSession.setStateListener(new SessionStateListener() {
+        svPublish.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
-            public void onSessionPrepared(int i) {
-                // TODO 设置开始按钮状态为有效
+            public void surfaceCreated(SurfaceHolder holder) {
+                mMediaRecorder = AlivcMediaRecorderFactory.createMediaRecorder();
+                mMediaRecorder.init(VideoChatActivity.this);
+                holder.setKeepScreenOn(true);
+                Map<String, Object> mConfigure = new HashMap<>();
+                mConfigure.put(AlivcMediaFormat.KEY_CAMERA_FACING, AlivcMediaFormat.CAMERA_FACING_FRONT);
+                mConfigure.put(AlivcMediaFormat.KEY_MAX_ZOOM_LEVEL, 3);
+                mConfigure.put(AlivcMediaFormat.KEY_OUTPUT_RESOLUTION, AlivcMediaFormat.OUTPUT_RESOLUTION_240P);
+                mMediaRecorder.prepare(mConfigure, svPublish.getHolder().getSurface());
             }
 
             @Override
-            public void onSessionStarted(int i) {
-
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+                mMediaRecorder.setPreviewSize(width, height);
             }
 
             @Override
-            public void onSessionStopped(int i) {
-
-            }
-
-            @Override
-            public void onSessionError(int i) {
-
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                mMediaRecorder.stopRecord();
+                mMediaRecorder.reset();
             }
         });
+
+
+        svPlay.getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                mPlayer = new AliVcMediaPlayer(VideoChatActivity.this, svPlay);
+
+                // 设置图像适配屏幕，适配最长边
+                mPlayer.setVideoScalingMode(MediaPlayer.VideoScalingMode.VIDEO_SCALING_MODE_SCALE_TO_FIT);
+                // 设置图像适配屏幕，适配最短边，超出部分裁剪
+                mPlayer.setVideoScalingMode(MediaPlayer.VideoScalingMode.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
+
+                mPlayer.setMaxBufferDuration(-1);
+
+                //设置缺省编码类型：0表示硬解；1表示软解；
+                //如果缺省为硬解，在使用硬解时如果解码失败，会尝试使用软解
+                //如果缺省为软解，则一直使用软解，软解较为耗电，建议移动设备尽量使用硬解
+                mPlayer.setDefaultDecoder(0);
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                mPlayer.stop();
+                mPlayer.destroy();
+            }
+        });
+
     }
 
 
     private void play(String url) {
-        Toast.makeText(VideoChatActivity.this, String.format("播放视频 %s", url), Toast.LENGTH_LONG).show();
-        mMediaPlayer = new BDCloudMediaPlayer(this.getApplicationContext());
-        try {
-            mMediaPlayer.setDataSource(url);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        mMediaPlayer.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(IMediaPlayer iMediaPlayer) {
-                mMediaPlayer.setDisplay(svPlay.getHolder());
-                mMediaPlayer.start();
-            }
-        });
-
-        mMediaPlayer.prepareAsync();
-
+        mPlayer.prepareAndPlay(url);
+        Toast.makeText(VideoChatActivity.this, "~~~~~~拉取视频~~~~~~", Toast.LENGTH_SHORT).show();
 
     }
 
 
     private void publish(final String url) {
-        mLiveSession.startRtmpSession(url);
+        mMediaRecorder.startRecord(url);
+        Toast.makeText(VideoChatActivity.this, "~~~~~~推送视频~~~~~~", Toast.LENGTH_SHORT).show();
     }
 
     private String getRequestUrl() {
@@ -176,56 +173,10 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mLiveSession.stopRtmpSession();
-//        mLiveSession.destroyRtmpSession();
-        mMediaPlayer.release();
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        mLiveSession.stopRtmpSession();
-//        mLiveSession.destroyRtmpSession();
-        mMediaPlayer.release();
-    }
-
-
-    /*private void register() {
-        Utils.processDelay(new IProcess() {
-            @Override
-            public Message doProcess() {
-                Message message = new Message();
-
-
-                RegisterRequest request = new RegisterRequest();
-                request.setRtmpAddress(getRequestUrl());
-                request.setClientId("0001");
-                request.setClientType(1);
-                request.setClientName("Client0001");
-                application.demoClientHandler.sendRequest(request);
-
-                message.obj = "Send register request success";
-                return message;
-            }
-        }, new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                Toast.makeText(VideoChatActivity.this, msg.obj.toString(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }*/
-
-    @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_start:
-                if (!isPublished) {
-                    publish(getRequestUrl() + "/" + "Client0001");
-                    isPublished = true;
-                }
+                publish(getRequestUrl() + "/" + CLIENT_NAME);
 
                 Utils.processDelay(new IProcess() {
                     @Override
@@ -234,9 +185,9 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
 
                         HelpRequest request = new HelpRequest();
                         request.setRtmpAddress(getRequestUrl());
-                        request.setClientId("0001");
+                        request.setClientId(CLIENT_ID);
+                        request.setClientName(CLIENT_NAME);
                         request.setClientType(1);
-                        request.setClientName("Client0001");
                         application.demoClientHandler.sendRequest(request);
 
                         message.obj = "发送帮助请求";
@@ -252,13 +203,16 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
 
                 break;
             case R.id.btn_stop:
+                mMediaRecorder.stopRecord();
+                mPlayer.stop();
+
                 Utils.processDelay(new IProcess() {
                     @Override
                     public Message doProcess() {
                         Message message = new Message();
 
                         EndHelpRequest request = new EndHelpRequest();
-                        request.setClientId("0001");
+                        request.setClientId(CLIENT_ID);
                         request.setClientType(1);
                         application.demoClientHandler.sendRequest(request);
 
@@ -272,10 +226,6 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
                     }
                 });
 
-                mLiveSession.stopRtmpSession();
-                isPublished = false;
-                mMediaPlayer.stop();
-                mMediaPlayer.release();
                 break;
         }
     }
