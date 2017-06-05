@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.alibaba.livecloud.live.AlivcMediaFormat;
@@ -45,6 +46,7 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
 
     private CompositeDisposable _disposables;
 
+    private EditText txtLog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +59,9 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
         svPublish = (SurfaceView) findViewById(R.id.sv_publish);
 
         svPublish.setZOrderOnTop(true);
+
+
+        txtLog = (EditText) findViewById(R.id.txt_log);
 
         AliVcMediaPlayer.init(getApplicationContext(), "", new AccessKeyCallback() {
             public AccessKey getAccessToken() {
@@ -113,6 +118,7 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
                 mConfigure.put(AlivcMediaFormat.KEY_MAX_ZOOM_LEVEL, 3);
                 mConfigure.put(AlivcMediaFormat.KEY_OUTPUT_RESOLUTION, AlivcMediaFormat.OUTPUT_RESOLUTION_240P);
                 mMediaRecorder.prepare(mConfigure, svPublish.getHolder().getSurface());
+                log("Publish UI Done.");
             }
 
             @Override
@@ -144,6 +150,7 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
                 //如果缺省为硬解，在使用硬解时如果解码失败，会尝试使用软解
                 //如果缺省为软解，则一直使用软解，软解较为耗电，建议移动设备尽量使用硬解
                 mPlayer.setDefaultDecoder(0);
+                log("Play UI Done.");
             }
 
             @Override
@@ -164,12 +171,14 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
     private void play(String url) {
         mPlayer.prepareAndPlay(url);
         Toast.makeText(VideoChatActivity.this, "~~~~~~拉取视频~~~~~~", Toast.LENGTH_SHORT).show();
+        log("Pull Stream.");
     }
 
 
     private void publish(final String url) {
         mMediaRecorder.startRecord(url);
         Toast.makeText(VideoChatActivity.this, "~~~~~~推送视频~~~~~~", Toast.LENGTH_SHORT).show();
+        log("Push Stream.");
     }
 
     private String getRequestUrl() {
@@ -182,7 +191,7 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
             case R.id.btn_start:
                 publish(getRequestUrl() + "/" + CLIENT_NAME);
 
-                Utils.processDelay(new IProcess() {
+               /* Utils.processDelay(new IProcess() {
                     @Override
                     public Message doProcess() {
                         Message message = new Message();
@@ -202,7 +211,7 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
                     public void handleMessage(Message msg) {
                         Toast.makeText(VideoChatActivity.this, msg.obj.toString(), Toast.LENGTH_SHORT).show();
                     }
-                });
+                });*/
 
                 play(getRequestUrl() + "/" + CLIENT_NAME);
 
@@ -211,8 +220,10 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
             case R.id.btn_stop:
                 mPlayer.stop();
                 mMediaRecorder.stopRecord();
+                log("Stop Pull Stream.");
+                log("Stop Push Stream.");
 
-                Utils.processDelay(new IProcess() {
+                /*Utils.processDelay(new IProcess() {
                     @Override
                     public Message doProcess() {
                         Message message = new Message();
@@ -230,9 +241,14 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
                     public void handleMessage(Message msg) {
                         Toast.makeText(VideoChatActivity.this, msg.obj.toString(), Toast.LENGTH_SHORT).show();
                     }
-                });
+                });*/
 
                 break;
         }
+    }
+
+
+    private void log(String msg){
+        txtLog.append(msg + "\r\n");
     }
 }
