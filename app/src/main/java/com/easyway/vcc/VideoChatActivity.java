@@ -204,7 +204,7 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
                     }
                 });
 
-                play(getRequestUrl() + "/" + CLIENT_NAME);
+//                play(getRequestUrl() + "/" + CLIENT_NAME);
 
 
                 break;
