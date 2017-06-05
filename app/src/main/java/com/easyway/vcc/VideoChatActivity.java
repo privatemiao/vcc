@@ -12,6 +12,8 @@ import android.widget.Toast;
 import com.alibaba.livecloud.live.AlivcMediaFormat;
 import com.alibaba.livecloud.live.AlivcMediaRecorder;
 import com.alibaba.livecloud.live.AlivcMediaRecorderFactory;
+import com.alivc.player.AccessKey;
+import com.alivc.player.AccessKeyCallback;
 import com.alivc.player.AliVcMediaPlayer;
 import com.alivc.player.MediaPlayer;
 import com.easyway.vcc.net.Application;
@@ -29,7 +31,7 @@ import io.reactivex.functions.Consumer;
 
 public class VideoChatActivity extends AppCompatActivity implements View.OnClickListener {
 
-    public static final String STREAM_SERVER = "rtmp://10.100.103.13/live";
+    public static final String STREAM_SERVER = "rtmp://192.168.2.130/live";
     public static final String CLIENT_NAME = "Client0001";
     public static final String CLIENT_ID = "0001";
 
@@ -51,15 +53,18 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
 
         application = (Application) this.getApplication();
 
-
         svPlay = (SurfaceView) findViewById(R.id.sv_play);
         svPublish = (SurfaceView) findViewById(R.id.sv_publish);
 
         svPublish.setZOrderOnTop(true);
 
+        AliVcMediaPlayer.init(getApplicationContext(), "", new AccessKeyCallback() {
+            public AccessKey getAccessToken() {
+                return new AccessKey("", "");
+            }
+        });
 
         initUI();
-
 
         findViewById(R.id.btn_start).setOnClickListener(this);
         findViewById(R.id.btn_stop).setOnClickListener(this);
@@ -159,7 +164,6 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
     private void play(String url) {
         mPlayer.prepareAndPlay(url);
         Toast.makeText(VideoChatActivity.this, "~~~~~~拉取视频~~~~~~", Toast.LENGTH_SHORT).show();
-
     }
 
 
@@ -200,11 +204,13 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
                     }
                 });
 
+                play(getRequestUrl() + "/" + CLIENT_NAME);
+
 
                 break;
             case R.id.btn_stop:
-                mMediaRecorder.stopRecord();
                 mPlayer.stop();
+                mMediaRecorder.stopRecord();
 
                 Utils.processDelay(new IProcess() {
                     @Override
