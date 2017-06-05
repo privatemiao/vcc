@@ -69,7 +69,7 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
         findViewById(R.id.btn_start).setOnClickListener(this);
         findViewById(R.id.btn_stop).setOnClickListener(this);
 
-        initCommProcessor();
+//        initCommProcessor();
 
     }
 
@@ -204,7 +204,7 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
                     }
                 });
 
-//                play(getRequestUrl() + "/" + CLIENT_NAME);
+                play(getRequestUrl() + "/" + CLIENT_NAME);
 
 
                 break;

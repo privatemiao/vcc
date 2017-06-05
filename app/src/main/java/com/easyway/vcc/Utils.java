@@ -12,7 +12,8 @@ public class Utils {
                 new Runnable() {
                     @Override
                     public void run() {
-                        Message message = process.doProcess();
+                        //Message message = process.doProcess();
+                        Message message = new Message();
                         handler.sendMessage(message);
                     }
                 }

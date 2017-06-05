@@ -20,9 +20,9 @@ import java.util.Map;
 
 public class PlayActivity extends AppCompatActivity implements View.OnClickListener {
 
+    public static final String SERVER_IP = "192.168.2.130";
     private SurfaceView svPlay;
     private SurfaceView svView;
-
     private AlivcMediaRecorder mMediaRecorder;
     private AliVcMediaPlayer mPlayer;
 
@@ -44,7 +44,6 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
 
         findViewById(R.id.btn_start).setOnClickListener(this);
         findViewById(R.id.btn_stop).setOnClickListener(this);
-
 
 
     }
@@ -113,13 +112,13 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.btn_start:
                 try {
-                    mMediaRecorder.startRecord("rtmp://192.168.2.130/live/request");
+                    mMediaRecorder.startRecord(String.format("rtmp://%s/live/request", SERVER_IP));
                     Toast.makeText(PlayActivity.this, "~~~~~~推送视频~~~~~~", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
 
-                mPlayer.prepareAndPlay("rtmp://192.168.2.130/live/request");
+                mPlayer.prepareAndPlay(String.format("rtmp://%s/live/request", SERVER_IP));
                 Toast.makeText(PlayActivity.this, "~~~~~~拉取视频~~~~~~", Toast.LENGTH_SHORT).show();
 
                 break;
