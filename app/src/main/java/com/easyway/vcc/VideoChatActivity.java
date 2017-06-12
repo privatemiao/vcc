@@ -76,6 +76,13 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
 
         initCommProcessor();
 
+        findViewById(R.id.btn_refresh).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                play(null);
+            }
+        });
+
     }
 
 
@@ -168,7 +175,14 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
     }
 
 
+    String clientURL = null;
     private void play(String url) {
+        if (url == null){
+            if (clientURL != null){
+                url = clientURL;
+            }
+        }
+        clientURL = url;
         mPlayer.prepareAndPlay(url);
         Toast.makeText(VideoChatActivity.this, "~~~~~~拉取视频~~~~~~", Toast.LENGTH_SHORT).show();
         log(String.format("Pull Stream %s", url));

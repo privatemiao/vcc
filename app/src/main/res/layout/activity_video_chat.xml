@@ -65,6 +65,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Stop" />
+
+            <Button
+                android:id="@+id/btn_refresh"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.27"
+                android:text="Refresh" />
         </LinearLayout>
 
     </LinearLayout>

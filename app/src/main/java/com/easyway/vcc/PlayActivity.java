@@ -20,9 +20,9 @@ import java.util.Map;
 
 public class PlayActivity extends AppCompatActivity implements View.OnClickListener {
 
-    public static final String SERVER_IP = "192.168.47.53";
+    public static final String SERVER_IP = "10.100.103.13";
     private SurfaceView svPlay;
-    private SurfaceView svView;
+//    private SurfaceView svView;
     private AlivcMediaRecorder mMediaRecorder;
     private AliVcMediaPlayer mPlayer;
 
@@ -31,7 +31,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play);
 
-        svView = (SurfaceView) findViewById(R.id.sv_view);//预览推送视频
+//        svView = (SurfaceView) findViewById(R.id.sv_view);//预览推送视频
         svPlay = (SurfaceView) findViewById(R.id.sv_play);//拉取播放视频
 
         AliVcMediaPlayer.init(getApplicationContext(), "", new AccessKeyCallback() {
@@ -49,7 +49,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initUI() {
-        svView.getHolder().addCallback(new SurfaceHolder.Callback() {
+        /*svView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
                 mMediaRecorder = AlivcMediaRecorderFactory.createMediaRecorder();
@@ -72,7 +72,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
                 mMediaRecorder.stopRecord();
                 mMediaRecorder.reset();
             }
-        });
+        });*/
 
 
         svPlay.getHolder().addCallback(new SurfaceHolder.Callback() {
@@ -111,19 +111,19 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_start:
-                try {
+                /*try {
                     mMediaRecorder.startRecord(String.format("rtmp://%s/live/request", SERVER_IP));
                     Toast.makeText(PlayActivity.this, "~~~~~~推送视频~~~~~~", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     e.printStackTrace();
-                }
+                }*/
 
-                mPlayer.prepareAndPlay(String.format("rtmp://%s/live/request", SERVER_IP));
+                mPlayer.prepareAndPlay(String.format("rtmp://%s/live/mel", SERVER_IP));
                 Toast.makeText(PlayActivity.this, "~~~~~~拉取视频~~~~~~", Toast.LENGTH_SHORT).show();
 
                 break;
             case R.id.btn_stop:
-                mMediaRecorder.stopRecord();
+//                mMediaRecorder.stopRecord();
                 mPlayer.stop();
                 break;
         }
