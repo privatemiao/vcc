@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class PlayActivity extends AppCompatActivity implements View.OnClickListener {
 
-    public static final String SERVER_IP = "192.168.2.130";
+    public static final String SERVER_IP = "192.168.47.53";
     private SurfaceView svPlay;
     private SurfaceView svView;
     private AlivcMediaRecorder mMediaRecorder;

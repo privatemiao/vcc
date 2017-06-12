@@ -32,7 +32,7 @@ import io.reactivex.functions.Consumer;
 
 public class VideoChatActivity extends AppCompatActivity implements View.OnClickListener {
 
-    public static final String STREAM_SERVER = "rtmp://192.168.2.130/live";
+    public static final String STREAM_SERVER = "rtmp://10.100.103.13/live";
     public static final String CLIENT_NAME = "Client0001";
     public static final String CLIENT_ID = "0001";
 
@@ -74,7 +74,7 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
         findViewById(R.id.btn_start).setOnClickListener(this);
         findViewById(R.id.btn_stop).setOnClickListener(this);
 
-//        initCommProcessor();
+        initCommProcessor();
 
     }
 
@@ -90,7 +90,7 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
                             @Override
                             public void accept(@NonNull Object o) throws Exception {
                                 Toast.makeText(VideoChatActivity.this, o.toString(), Toast.LENGTH_SHORT).show();
-
+                                log(String.format("Response: %s", o.toString()));
                                 if (o instanceof HelpResponse) {
                                     String responseURL = ((HelpResponse) o).getRtmpAddress();
                                     String name = ((HelpResponse) o).getStaffName();
@@ -171,14 +171,14 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
     private void play(String url) {
         mPlayer.prepareAndPlay(url);
         Toast.makeText(VideoChatActivity.this, "~~~~~~拉取视频~~~~~~", Toast.LENGTH_SHORT).show();
-        log("Pull Stream.");
+        log(String.format("Pull Stream %s", url));
     }
 
 
     private void publish(final String url) {
         mMediaRecorder.startRecord(url);
         Toast.makeText(VideoChatActivity.this, "~~~~~~推送视频~~~~~~", Toast.LENGTH_SHORT).show();
-        log("Push Stream.");
+        log(String.format("Push Stream %s", url));
     }
 
     private String getRequestUrl() {
@@ -191,7 +191,7 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
             case R.id.btn_start:
                 publish(getRequestUrl() + "/" + CLIENT_NAME);
 
-               /* Utils.processDelay(new IProcess() {
+                Utils.processDelay(new IProcess() {
                     @Override
                     public Message doProcess() {
                         Message message = new Message();
@@ -211,9 +211,11 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
                     public void handleMessage(Message msg) {
                         Toast.makeText(VideoChatActivity.this, msg.obj.toString(), Toast.LENGTH_SHORT).show();
                     }
-                });*/
+                });
 
-                play(getRequestUrl() + "/" + CLIENT_NAME);
+
+
+//                play(getRequestUrl() + "/" + CLIENT_NAME);
 
 
                 break;
@@ -223,7 +225,7 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
                 log("Stop Pull Stream.");
                 log("Stop Push Stream.");
 
-                /*Utils.processDelay(new IProcess() {
+                Utils.processDelay(new IProcess() {
                     @Override
                     public Message doProcess() {
                         Message message = new Message();
@@ -240,15 +242,16 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
                     @Override
                     public void handleMessage(Message msg) {
                         Toast.makeText(VideoChatActivity.this, msg.obj.toString(), Toast.LENGTH_SHORT).show();
+                        log(msg.obj.toString());
                     }
-                });*/
+                });
 
                 break;
         }
     }
 
 
-    private void log(String msg){
+    private void log(String msg) {
         txtLog.append(msg + "\r\n");
     }
 }

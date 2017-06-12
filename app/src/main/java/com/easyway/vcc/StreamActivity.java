@@ -69,7 +69,7 @@ public class StreamActivity extends AppCompatActivity implements View.OnClickLis
             case R.id.btn_start:
                 Toast.makeText(StreamActivity.this, "~~~~~~推送视频~~~~~~", Toast.LENGTH_SHORT).show();
                 try {
-                    mMediaRecorder.startRecord("rtmp://192.168.2.130/live/request");
+                    mMediaRecorder.startRecord("rtmp://10.100.103.13/live/request");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
