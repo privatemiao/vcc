@@ -37,4 +37,13 @@
         android:layout_below="@+id/btn_help"
         android:layout_marginTop="35dp"
         android:text="视频求助" />
+
+    <Button
+        android:id="@+id/btn_serial"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SerialPortTest"
+        android:layout_below="@+id/btn_client"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="39dp" />
 </RelativeLayout>

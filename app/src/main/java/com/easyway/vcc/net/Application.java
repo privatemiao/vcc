@@ -2,6 +2,13 @@ package com.easyway.vcc.net;
 
 import android.content.Context;
 
+import com.easyway.vcc.serial.SerialPortFinder;
+
+import java.io.File;
+import java.io.IOException;
+import java.security.InvalidParameterException;
+
+import android_serialport_api.SerialPort;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -87,4 +94,22 @@ public class Application extends android.app.Application {
         return _rxBus;
     }
 
+    // For Serial Port
+    public SerialPortFinder mSerialPortFinder = new SerialPortFinder();
+    private SerialPort mSerialPort = null;
+
+    public SerialPort getSerialPort() throws SecurityException, IOException, InvalidParameterException {
+        if (mSerialPort == null) {
+                        /* Open the serial port */
+            mSerialPort = new SerialPort(new File("/dev/ttyS4"), 9600, 0);
+        }
+        return mSerialPort;
+    }
+
+    public void closeSerialPort() {
+        if (mSerialPort != null) {
+            mSerialPort.close();
+            mSerialPort = null;
+        }
+    }
 }

@@ -40,7 +40,14 @@ public class SettingActivity extends AppCompatActivity {
             }
         });
 
+        findViewById(R.id.btn_serial).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(SettingActivity.this, SerialPortTestActivity.class));
+            }
+        });
 
+        startActivity(new Intent(SettingActivity.this, SerialPortTestActivity.class));
     }
 
 }
