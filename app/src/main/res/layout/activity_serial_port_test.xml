@@ -19,7 +19,6 @@
             android:layout_height="fill_parent"
             android:layout_weight="1"
             android:gravity="top"
-            android:hint="Reception"
             android:isScrollContainer="true"
             android:scrollbarStyle="insideOverlay"></EditText>
     </LinearLayout>
