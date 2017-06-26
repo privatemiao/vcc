@@ -20,6 +20,7 @@
             android:layout_weight="1"
             android:gravity="top"
             android:isScrollContainer="true"
-            android:scrollbarStyle="insideOverlay"></EditText>
+            android:scrollbarStyle="insideOverlay"
+            android:visibility="gone"></EditText>
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

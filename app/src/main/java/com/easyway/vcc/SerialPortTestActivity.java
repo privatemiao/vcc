@@ -9,14 +9,12 @@ import java.io.IOException;
 import java.util.Date;
 
 public class SerialPortTestActivity extends SerialPortActivity {
-    private EditText txtInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_serial_port_test);
 
-        txtInfo = (EditText) findViewById(R.id.txtInfo);
 
         heartbeat();
     }
@@ -25,9 +23,9 @@ public class SerialPortTestActivity extends SerialPortActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while(true){
+                while (true) {
                     try {
-                        mOutputStream.write(("" + new Date().getTime()).getBytes());
+                        mOutputStream.write("1".getBytes());
                         mOutputStream.write('\n');
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -47,11 +45,10 @@ public class SerialPortTestActivity extends SerialPortActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (txtInfo != null){
-                    txtInfo.append(new String(buffer, 0, size));
-                }
+                finish();
             }
         });
+
     }
 
 

@@ -6,7 +6,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
-public class SettingActivity extends AppCompatActivity {
+import com.easyway.vcc.serial.SerialPortActivity;
+
+import java.util.Date;
+
+public class SettingActivity extends SerialPortActivity {
 
     private static final int INTERVAL_OF_TWO_CLICK_TO_QUIT = 1000; // 1 seconde
     private long mLastPressBackTime = 0;
@@ -47,7 +51,38 @@ public class SettingActivity extends AppCompatActivity {
             }
         });
 
-        startActivity(new Intent(SettingActivity.this, SerialPortTestActivity.class));
+        heartbeat();
+    }
+
+    private void heartbeat() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        mOutputStream.write("1".getBytes());
+                        mOutputStream.write('\n');
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+    }
+
+    @Override
+    protected void onDataReceived(byte[] buffer, int size) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                startActivity(new Intent(SettingActivity.this, SerialPortTestActivity.class));
+            }
+        });
     }
 
 }
