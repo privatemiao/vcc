@@ -13,21 +13,12 @@
         tools:layout_editor_absoluteY="8dp"
         tools:layout_editor_absoluteX="8dp">
 
-        <EditText
-            android:id="@+id/txtInfo"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_weight="1"
-            android:gravity="top"
-            android:isScrollContainer="true"
-            android:scrollbarStyle="insideOverlay"
-            android:visibility="gone"></EditText>
-
         <TextView
             android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="串口测试页面" />
+            android:text="视频求助"
+            android:textSize="36sp" />
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>
