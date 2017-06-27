@@ -69,12 +69,12 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
             }
         });
 
+        initCommProcessor();
         initUI();
 
         findViewById(R.id.btn_start).setOnClickListener(this);
         findViewById(R.id.btn_stop).setOnClickListener(this);
 
-        initCommProcessor();
 
         findViewById(R.id.btn_refresh).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -126,6 +126,7 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
                 mConfigure.put(AlivcMediaFormat.KEY_OUTPUT_RESOLUTION, AlivcMediaFormat.OUTPUT_RESOLUTION_240P);
                 mMediaRecorder.prepare(mConfigure, svPublish.getHolder().getSurface());
                 log("Publish UI Done.");
+                _start();
             }
 
             @Override
@@ -203,65 +204,68 @@ public class VideoChatActivity extends AppCompatActivity implements View.OnClick
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_start:
-                publish(getRequestUrl() + "/" + CLIENT_NAME);
-
-                Utils.processDelay(new IProcess() {
-                    @Override
-                    public Message doProcess() {
-                        Message message = new Message();
-
-                        HelpRequest request = new HelpRequest();
-                        request.setRtmpAddress(getRequestUrl());
-                        request.setClientId(CLIENT_ID);
-                        request.setClientName(CLIENT_NAME);
-                        request.setClientType(1);
-                        application.demoClientHandler.sendRequest(request);
-
-                        message.obj = "发送帮助请求";
-                        return message;
-                    }
-                }, new Handler() {
-                    @Override
-                    public void handleMessage(Message msg) {
-                        Toast.makeText(VideoChatActivity.this, msg.obj.toString(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-
-
-//                play(getRequestUrl() + "/" + CLIENT_NAME);
-
-
+                _start();
                 break;
             case R.id.btn_stop:
-                mPlayer.stop();
-                mMediaRecorder.stopRecord();
-                log("Stop Pull Stream.");
-                log("Stop Push Stream.");
-
-                Utils.processDelay(new IProcess() {
-                    @Override
-                    public Message doProcess() {
-                        Message message = new Message();
-
-                        EndHelpRequest request = new EndHelpRequest();
-                        request.setClientId(CLIENT_ID);
-                        request.setClientType(1);
-                        application.demoClientHandler.sendRequest(request);
-
-                        message.obj = "发送停止帮助请求";
-                        return message;
-                    }
-                }, new Handler() {
-                    @Override
-                    public void handleMessage(Message msg) {
-                        Toast.makeText(VideoChatActivity.this, msg.obj.toString(), Toast.LENGTH_SHORT).show();
-                        log(msg.obj.toString());
-                    }
-                });
+                _stop();
 
                 break;
         }
+    }
+
+    private void _stop() {
+        mPlayer.stop();
+        mMediaRecorder.stopRecord();
+        log("Stop Pull Stream.");
+        log("Stop Push Stream.");
+
+        Utils.processDelay(new IProcess() {
+            @Override
+            public Message doProcess() {
+                Message message = new Message();
+
+                EndHelpRequest request = new EndHelpRequest();
+                request.setClientId(CLIENT_ID);
+                request.setClientType(1);
+                application.demoClientHandler.sendRequest(request);
+
+                message.obj = "发送停止帮助请求";
+                return message;
+            }
+        }, new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                Toast.makeText(VideoChatActivity.this, msg.obj.toString(), Toast.LENGTH_SHORT).show();
+                log(msg.obj.toString());
+            }
+        });
+    }
+
+    private void _start() {
+        publish(getRequestUrl() + "/" + CLIENT_NAME);
+
+        Utils.processDelay(new IProcess() {
+            @Override
+            public Message doProcess() {
+                Message message = new Message();
+
+                HelpRequest request = new HelpRequest();
+                request.setRtmpAddress(getRequestUrl());
+                request.setClientId(CLIENT_ID);
+                request.setClientName(CLIENT_NAME);
+                request.setClientType(1);
+                application.demoClientHandler.sendRequest(request);
+
+                message.obj = "发送帮助请求";
+                return message;
+            }
+        }, new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                Toast.makeText(VideoChatActivity.this, msg.obj.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 
 

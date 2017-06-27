@@ -13,7 +13,7 @@ import com.easyway.vcc.serial.SerialPortActivity;
 
 import java.util.Date;
 
-public class SettingActivity extends SerialPortActivity {
+public class SettingActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,46 +54,4 @@ public class SettingActivity extends SerialPortActivity {
 
     }
 
-    @Override
-    protected void onButtonUp() {
-        onDestroy();
-        startActivity(new Intent(SettingActivity.this, SerialPortTestActivity.class));
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d("VCC", "SettingActivity onDestroy");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        final SerialPortActivity a = this;
-
-        Utils.processDelay(new IProcess() {
-            @Override
-            public Message doProcess() {
-                Message m = new Message();
-                m.obj = "Welcome";
-                return m;
-            }
-        }, new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                Log.d("VCC", a.mSerialPort == null ? "NULL" : "NOT NULL");
-                if (a.mSerialPort == null) {
-                    a.init();
-                }
-            }
-        }, 1000L);
-
-
-
-
-        /*if (this.mSerialPort == null){
-            this.onCreate(savedInstanceState);
-        }*/
-    }
 }
