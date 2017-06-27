@@ -40,8 +40,40 @@ public abstract class SerialPortActivity extends Activity {
     private InputStream mInputStream;
     private ReadThread mReadThread;
 
+    private HeartBeatThread heartBeatThread;
+    private WatchButtonUpThread watchButtonUpThread;
+
     private long sleepTime = 200;
     private long triggerTime = 0;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mApplication = (Application) getApplication();
+        try {
+            mSerialPort = mApplication.getSerialPort();
+            mOutputStream = mSerialPort.getOutputStream();
+            mInputStream = mSerialPort.getInputStream();
+
+			/* Create a receiving thread */
+            mReadThread = new ReadThread();
+            mReadThread.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        triggerTime = 0;
+        heartBeatThread = new HeartBeatThread();
+        heartBeatThread.start();
+        watchButtonUpThread = new WatchButtonUpThread();
+        watchButtonUpThread.start();
+    }
+
+    protected void watchButtonUp() {
+        watchButtonUpThread = new WatchButtonUpThread();
+        watchButtonUpThread.start();
+    }
 
     private class ReadThread extends Thread {
 
@@ -77,72 +109,50 @@ public abstract class SerialPortActivity extends Activity {
         b.show();
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mApplication = (Application) getApplication();
-        try {
-            mSerialPort = mApplication.getSerialPort();
-            mOutputStream = mSerialPort.getOutputStream();
-            mInputStream = mSerialPort.getInputStream();
 
-			/* Create a receiving thread */
-            mReadThread = new ReadThread();
-            mReadThread.start();
-        } catch (Exception e) {
-            e.printStackTrace();
+    private class HeartBeatThread extends Thread {
+        @Override
+        public void run() {
+            super.run();
+
+            while (!isInterrupted()) {
+                try {
+                    mOutputStream.write(("1").getBytes());
+                    mOutputStream.write('\n');
+                    Thread.sleep(sleepTime);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    interrupt();
+                }
+            }
         }
-
-        triggerTime = 0;
-        heartbeat();
-        watchButtonUp();
     }
 
-    private void heartbeat() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        mOutputStream.write(("1").getBytes());
-                        mOutputStream.write('\n');
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        Thread.sleep(sleepTime);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+    private class WatchButtonUpThread extends Thread {
+        @Override
+        public void run() {
+            super.run();
+            while (!isInterrupted()) {
+                try {
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException e) {
+                    interrupt();
+                }
+                if (checkEqual()) {
+                    Log.d("VCC", "按钮抬起^^^^^^^^^^^");
+                    triggerTime = 0;
+                    onButtonUp();
+                    break;
                 }
             }
-        }).start();
-    }
-
-    protected void watchButtonUp() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        Thread.sleep(sleepTime);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    if (checkEqual()) {
-                        Log.d("VCC", "按钮抬起^^^^^^^^^^^");
-                        triggerTime = 0;
-                        onButtonUp();
-                        break;
-                    }
-                }
-            }
-        }).start();
+        }
     }
 
     protected abstract void onButtonUp();
 
     private long olderVal = 0;
+
     private boolean checkEqual() {
         if (olderVal == 0) {
             olderVal = triggerTime;
@@ -158,18 +168,31 @@ public abstract class SerialPortActivity extends Activity {
         return false;
     }
 
-    protected void onDataReceived(final byte[] buffer, final int size){
+    protected void onDataReceived(final byte[] buffer, final int size) {
         triggerTime = System.currentTimeMillis();
         Log.d("VCC", triggerTime + "");
     }
 
     @Override
     protected void onDestroy() {
+        Log.d("VCC", "SerialPortActivity Destroy");
+
         if (mReadThread != null) {
             mReadThread.interrupt();
         }
+
+        if (watchButtonUpThread != null) {
+            Log.d("VCC", "interrupt watchButtonUpThread");
+            watchButtonUpThread.interrupt();
+        }
+        if (heartBeatThread != null) {
+            Log.d("VCC", "interrupt heartBeatThread");
+            heartBeatThread.interrupt();
+        }
+
         mApplication.closeSerialPort();
         mSerialPort = null;
+
         super.onDestroy();
     }
 }

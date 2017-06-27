@@ -56,6 +56,7 @@ public class SettingActivity extends SerialPortActivity {
     @Override
     protected void onButtonUp() {
         Log.d("VCC", "YES");
+//        watchButtonUp();
         startActivity(new Intent(SettingActivity.this, SerialPortTestActivity.class));
         finish();
     }
