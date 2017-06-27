@@ -21,6 +21,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.easyway.vcc.net.Application;
 
@@ -38,6 +39,9 @@ public abstract class SerialPortActivity extends Activity {
     protected OutputStream mOutputStream;
     private InputStream mInputStream;
     private ReadThread mReadThread;
+
+    private long sleepTime = 200;
+    private long triggerTime = 0;
 
     private class ReadThread extends Thread {
 
@@ -88,9 +92,76 @@ public abstract class SerialPortActivity extends Activity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        triggerTime = 0;
+        heartbeat();
+        watchButtonUp();
     }
 
-    protected abstract void onDataReceived(final byte[] buffer, final int size);
+    private void heartbeat() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        mOutputStream.write(("1").getBytes());
+                        mOutputStream.write('\n');
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        Thread.sleep(sleepTime);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+    }
+
+    protected void watchButtonUp() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        Thread.sleep(sleepTime);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    if (checkEqual()) {
+                        Log.d("VCC", "按钮抬起^^^^^^^^^^^");
+                        triggerTime = 0;
+                        onButtonUp();
+                        break;
+                    }
+                }
+            }
+        }).start();
+    }
+
+    protected abstract void onButtonUp();
+
+    private long olderVal = 0;
+    private boolean checkEqual() {
+        if (olderVal == 0) {
+            olderVal = triggerTime;
+            return false;
+        }
+        if (olderVal == triggerTime) {
+            Log.d("VCC", String.format("oldVal %d, newVal: %d", olderVal, triggerTime));
+            olderVal = 0;
+            return true;
+        } else {
+            olderVal = triggerTime;
+        }
+        return false;
+    }
+
+    protected void onDataReceived(final byte[] buffer, final int size){
+        triggerTime = System.currentTimeMillis();
+        Log.d("VCC", triggerTime + "");
+    }
 
     @Override
     protected void onDestroy() {
