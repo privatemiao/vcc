@@ -9,13 +9,14 @@ import java.io.IOException;
 import java.util.Date;
 
 public class SerialPortTestActivity extends SerialPortActivity {
+    private boolean beat = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_serial_port_test);
 
-
+        beat = true;
         heartbeat();
     }
 
@@ -24,6 +25,9 @@ public class SerialPortTestActivity extends SerialPortActivity {
             @Override
             public void run() {
                 while (true) {
+                    if (!beat){
+                        break;
+                    }
                     try {
                         mOutputStream.write("1".getBytes());
                         mOutputStream.write('\n');
@@ -31,7 +35,7 @@ public class SerialPortTestActivity extends SerialPortActivity {
                         e.printStackTrace();
                     }
                     try {
-                        Thread.sleep(500);
+                        Thread.sleep(200);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -42,6 +46,7 @@ public class SerialPortTestActivity extends SerialPortActivity {
 
     @Override
     protected void onDataReceived(final byte[] buffer, final int size) {
+        beat = false;
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
