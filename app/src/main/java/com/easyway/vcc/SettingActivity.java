@@ -2,6 +2,8 @@ package com.easyway.vcc;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -13,10 +15,9 @@ import java.util.Date;
 
 public class SettingActivity extends SerialPortActivity {
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d("VCC", "SettingActivity onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
 
@@ -55,10 +56,44 @@ public class SettingActivity extends SerialPortActivity {
 
     @Override
     protected void onButtonUp() {
-        Log.d("VCC", "YES");
-//        watchButtonUp();
+        onDestroy();
         startActivity(new Intent(SettingActivity.this, SerialPortTestActivity.class));
-        finish();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d("VCC", "SettingActivity onDestroy");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        final SerialPortActivity a = this;
+
+        Utils.processDelay(new IProcess() {
+            @Override
+            public Message doProcess() {
+                Message m = new Message();
+                m.obj = "Welcome";
+                return m;
+            }
+        }, new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                Log.d("VCC", a.mSerialPort == null ? "NULL" : "NOT NULL");
+                if (a.mSerialPort == null) {
+                    a.init();
+                }
+            }
+        }, 1000L);
+
+
+
+
+        /*if (this.mSerialPort == null){
+            this.onCreate(savedInstanceState);
+        }*/
+    }
 }

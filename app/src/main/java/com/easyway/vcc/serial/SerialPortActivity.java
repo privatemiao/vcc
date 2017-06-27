@@ -35,7 +35,7 @@ import android_serialport_api.SerialPort;
 public abstract class SerialPortActivity extends Activity {
 
     protected Application mApplication;
-    protected SerialPort mSerialPort;
+    public SerialPort mSerialPort;
     protected OutputStream mOutputStream;
     private InputStream mInputStream;
     private ReadThread mReadThread;
@@ -50,6 +50,10 @@ public abstract class SerialPortActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        init();
+    }
+
+    public void init(){
         mApplication = (Application) getApplication();
         try {
             mSerialPort = mApplication.getSerialPort();
@@ -122,6 +126,7 @@ public abstract class SerialPortActivity extends Activity {
                     Thread.sleep(sleepTime);
                 } catch (IOException e) {
                     e.printStackTrace();
+                    break;
                 } catch (InterruptedException e) {
                     interrupt();
                 }
@@ -175,8 +180,6 @@ public abstract class SerialPortActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        Log.d("VCC", "SerialPortActivity Destroy");
-
         if (mReadThread != null) {
             mReadThread.interrupt();
         }
